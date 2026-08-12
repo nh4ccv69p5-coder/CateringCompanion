@@ -1,0 +1,62 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0d10"><title>CateringCompanion V10.8 Final</title><link rel="stylesheet" href="styles.css"></head><body><div class="app">
+<header><div class="brand"><div class="logo">CC</div><div><h1>CateringCompanion</h1><p>Event → Produktion → Einkauf → Aufgaben</p></div></div><span class="ver">V10.8</span></header>
+<nav id="nav"><button class="on" data-p="today">Heute</button><button data-p="events">Events</button><button data-p="production">Produktion</button><button data-p="shopping">Einkauf</button><button data-p="more">Mehr</button></nav>
+
+<section id="today" class="page on"><div class="hero"><small>PRODUKTIONSCOCKPIT</small><h2 id="todayTitle">Heute</h2><p>Was wirklich ansteht – nach Posten sortiert.</p><div id="stats" class="stats"></div></div><div class="head"><h2>Offene Aufgaben</h2><p>Heute fällige, noch offene Produktion.</p></div><div id="todayOut" class="card"></div></section>
+
+<section id="events" class="page"><div class="head"><h2>Events</h2><p>Pax, Datum und Gerichte verwalten. Alles rechnet sofort neu.</p></div><div class="card"><div id="eventBanner" class="banner"><span id="eventBannerText"></span><button id="cancelEvent" class="small">Abbrechen</button></div><h3 id="eventTitle">Neues Event</h3><div class="g3"><label>Eventname<input id="en" placeholder="Hochzeit Müller"></label><label>Datum<input id="ed" type="date"></label><label>Gäste / Pax<input id="ep" type="number" value="100"></label></div><p class="hint">Gerichte auswählen</p><div id="eventChoices"></div><button id="saveEvent" class="primary">Event speichern</button><div id="eventStatus"></div></div><div class="card"><label>Eventanzeige<select id="eventView"><option value="upcoming">Kommende</option><option value="archived">Archiv</option><option value="all">Alle</option></select></label></div><div id="eventCards"></div></section>
+
+<section id="production" class="page"><div class="head"><h2>Produktionsplan</h2><p>Gebündelt nach Posten und Fälligkeit. Direkt hier abhaken.</p></div><div class="card g2"><label>Zeitraum<select id="prodRange"><option value="7">7 Tage</option><option value="14">14 Tage</option><option value="30">30 Tage</option><option value="all">Alle</option></select></label><label>Posten<select id="prodStation"><option value="">Alle Posten</option></select></label></div><div id="productionOut"></div></section>
+
+<section id="shopping" class="page"><div class="head"><h2>Einkaufsliste</h2><p>g/kg und ml/L werden vereinheitlicht. Haken bleiben gespeichert.</p></div><div class="card g2"><label>Zeitraum<select id="shopRange"><option value="7">7 Tage</option><option value="14">14 Tage</option><option value="30">30 Tage</option><option value="all">Alle</option></select></label><label>Sortierung<select id="shopSort"><option value="category">Kategorie</option><option value="alpha">Alphabetisch</option></select></label></div><div id="shoppingOut" class="card"></div></section>
+
+<section id="more" class="page"><div class="head"><h2>Mehr</h2><p>Stammdaten und Spezialansichten.</p></div><div class="subnav"><button class="on" data-s="recipes">Rezepte</button><button data-s="dishes">Gerichte</button><button data-s="stations">Posten</button><button data-s="function">Function</button></div>
+
+<div id="sub-recipes" class="sub on"><div class="card"><div id="recipeBanner" class="banner"><span id="recipeBannerText"></span><button id="cancelRecipe" class="small">Abbrechen</button></div><h3 id="recipeTitle">Neues Rezept</h3><div class="g2"><label>Rezeptname<input id="rn" placeholder="Kartoffelpüree"></label><label>Posten<input id="rst" placeholder="Entremetier"></label></div><div class="g3"><label>Grundausbeute<input id="ry" type="number" value="10" step=".01"></label><label>Einheit<select id="ru"><option value="kg">kg</option><option value="l">Liter</option><option value="stk">Stück</option><option value="pax">Pax</option></select></label><label>Entspricht Pax<input id="rp" type="number" placeholder="40"></label></div><div class="g2"><label>Prep-Tage vorher<input id="rpd" type="number" value="1"></label><label>Aktive Zeit / Charge (Min.)<input id="ractive" type="number" value="30"></label></div>
+<div class="g3"><label>Gar-/Wartezeit / Charge (Min.)<input id="rpassive" type="number" value="0"></label><label>Puffer %<input id="rbuf" type="number" value="0" step=".1"></label><label>Verschnitt %<input id="rwaste" type="number" value="0" step=".1"></label></div>
+<label style="display:flex;align-items:center;gap:8px;margin:8px 0 12px"><input id="rround" type="checkbox" style="width:auto"> Auf volle Charge runden</label><label>Zutaten<textarea id="ring" placeholder="Kartoffeln | 8 | kg | Gemüse & Obst | 10 | kg&#10;Butter | 800 | g | Molkerei | 2,5 | kg"></textarea></label><p class="hint">Format: Zutat | Menge | Einheit | Kategorie | Gebindegröße | Gebindeeinheit. Die letzten 3 Angaben sind optional.</p><button id="saveRecipe" class="primary">Rezept speichern</button><div id="recipeStatus"></div></div><input id="recipeSearch" placeholder="Rezepte durchsuchen …"><div id="recipeCards"></div></div>
+
+<div id="sub-dishes" class="sub"><div class="card"><div id="dishBanner" class="banner"><span id="dishBannerText"></span><button id="cancelDish" class="small">Abbrechen</button></div><h3 id="dishTitle">Gericht bauen</h3><label>Gerichtname<input id="dn" placeholder="Geschmorte Rinderbacke"></label><div class="componentHead"><span></span><span>Komponente</span><span>Menge/Pax</span><span>Einheit</span></div><div id="dishComponents"></div><p class="hint">Beispiel: Püree 0,18 kg/Pax · Jus 0,08 L/Pax.</p><button id="saveDish" class="primary">Gericht speichern</button><div id="dishStatus"></div></div><input id="dishSearch" placeholder="Gerichte durchsuchen …"><div id="dishCards"></div></div>
+
+<div id="sub-stations" class="sub"><div class="card g2"><label>Posten<select id="stationFilter"><option value="">Alle</option></select></label><label>Zeitraum<select id="stationRange"><option value="today">Heute</option><option value="tomorrow">Morgen</option><option value="week">Diese Woche</option></select></label></div><div id="stationOut" class="card"></div></div>
+
+<div id="sub-function" class="sub">
+  <div class="card">
+    <h3>Function Sheet importieren</h3>
+    <p class="hint">PDF, Bild, TXT/CSV oder kopierten Text einlesen. Gedruckte Sheets funktionieren am besten; Bild-OCR läuft kostenlos im Browser.</p>
+    <label>Datei auswählen
+      <input id="functionFile" type="file" accept=".pdf,.txt,.csv,text/plain,text/csv,image/*,application/pdf">
+    </label>
+    <div id="functionFileStatus" class="help"></div>
+    <label>Oder Function-Sheet-Text einfügen
+      <textarea id="functionText" placeholder="Event: Hochzeit Müller&#10;Datum: 22.08.2026&#10;Pax: 180&#10;Ort: Orangerie&#10;Service: 19:00&#10;Menü: Geschmorte Rinderbacke; Crème brûlée&#10;Allergien: 2x glutenfrei; 1x Nussallergie&#10;Notizen: Aufbau ab 15:00"></textarea>
+    </label>
+    <button id="parseFunction" class="primary">Function Sheet analysieren</button>
+    <div id="functionResult"></div>
+  </div>
+
+  <div id="functionReview" class="card" style="display:none">
+    <h3>Erkannte Eventdaten prüfen</h3>
+    <div class="g2">
+      <label>Eventname<input id="frName"></label>
+      <label>Datum<input id="frDate" type="date"></label>
+      <label>Pax<input id="frPax" type="number"></label>
+      <label>Servicezeit<input id="frService" placeholder="z. B. 19:00"></label>
+      <label>Ort<input id="frLocation" placeholder="z. B. Orangerie"></label>
+      <label>Ansprechpartner<input id="frContact"></label>
+    </div>
+    <label>Allergien / Sonderkost<textarea id="frAllergies"></textarea></label>
+    <label>Notizen<textarea id="frNotes"></textarea></label>
+    <h3>Menü-Zuordnung</h3>
+    <p class="hint">Grün = sicher erkannt. Gelb = bitte kurz prüfen. Nicht gefundene Gerichte kannst du manuell zuordnen.</p>
+    <div id="functionDishReview"></div>
+    <button id="createFunctionEvent" class="primary">Geprüftes Event anlegen</button>
+    <div id="functionCreateStatus"></div>
+  </div>
+
+  <div class="card g2">
+    <button id="exportBtn">Backup exportieren</button>
+    <label>Backup importieren<input id="importFile" type="file" accept=".json"></label>
+  </div>
+</div>
+</section></div><script src="app.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script></body></html>
