@@ -1,0 +1,53 @@
+{
+  "r": [
+    {
+      "id": "recipe-a",
+      "n": "Kartoffel-Test A",
+      "st": "Entremetier",
+      "y": 1,
+      "u": "kg",
+      "p": 1,
+      "pd": 1,
+      "active": 0,
+      "passive": 0,
+      "buf": 0,
+      "waste": 0,
+      "roundBatch": false,
+      "a": [
+        {"n": "Kartoffel", "a": 12, "u": "kg", "c": "Gemüse & Obst", "pack": 10, "packUnit": "kg"}
+      ]
+    },
+    {
+      "id": "recipe-b",
+      "n": "Kartoffel-Test B",
+      "st": "Entremetier",
+      "y": 1,
+      "u": "Kilogramm",
+      "p": 1,
+      "pd": 1,
+      "active": 0,
+      "passive": 0,
+      "buf": 0,
+      "waste": 0,
+      "roundBatch": false,
+      "a": [
+        {"n": " Kartoffeln\u200B ", "a": 12000, "u": "Gramm", "c": "Gemüse & Obst", "pack": 10000, "packUnit": "g"}
+      ]
+    }
+  ],
+  "d": [
+    {
+      "id": "dish-1",
+      "n": "Kartoffel-Testgericht",
+      "c": [
+        {"id": "recipe-a", "q": 1, "u": "pax"},
+        {"id": "recipe-b", "q": 1, "u": "pax"}
+      ]
+    }
+  ],
+  "e": [
+    {"id": "event-1", "n": "Einkaufstest", "date": "2099-01-01", "p": 1, "ds": ["dish-1"]}
+  ],
+  "x": [],
+  "shop": ["all|kartoffeln|kg|30.000"]
+}

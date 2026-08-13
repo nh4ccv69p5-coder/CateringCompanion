@@ -15,3 +15,16 @@
 .v11ing{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border-bottom:1px solid var(--line)}
 .v11ing:last-child{border-bottom:0}
 @media(max-width:700px){.v11filters{grid-template-columns:1fr}.v11favfilter{width:100%}}
+
+/* CateringCompanion V11.1 shopping clarity */
+.shopline{grid-template-columns:28px minmax(0,1fr) auto;align-items:center;min-height:56px;padding:12px 0;column-gap:10px}
+.shopline input{width:24px;height:24px;margin:0}
+.shopbody{min-width:0}
+.shopmeta{display:block;margin-top:3px;font-size:13px;line-height:1.35}
+.shopqty{text-align:right;white-space:nowrap;line-height:1.15}
+.shopqty b{display:block;font-size:15px}
+.shopqty small{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.shopline input:checked~.shopbody,.shopline input:checked~.shopqty{opacity:.45}
+.shopline input:checked~.shopbody>b{text-decoration:line-through}
+.shopline-warning .shopmeta{color:#eadcae}
+@media(max-width:390px){.shopline{grid-template-columns:26px minmax(0,1fr) auto;column-gap:8px}.shopqty b{font-size:14px}}
