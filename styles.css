@@ -2,3 +2,16 @@
 .functionDishRow select{margin-top:8px}
 .functionDishRow .ok,.functionDishRow .warn,.functionDishRow .err{margin:0;padding:4px 7px;border-radius:999px}
 #functionReview h3{margin-top:18px}
+
+/* CateringCompanion V11 */
+.v11filters{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:8px 0 12px}
+.v11favfilter{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;white-space:nowrap}
+.v11favfilter input{width:18px;height:18px;margin:0}
+.v11title{display:flex;gap:7px;align-items:center}
+.v11star{color:#ffd166;font-size:16px}
+.v11scale{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.v11basis{display:block;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:4px;min-height:41px}
+.v11ingredients{margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.v11ing{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border-bottom:1px solid var(--line)}
+.v11ing:last-child{border-bottom:0}
+@media(max-width:700px){.v11filters{grid-template-columns:1fr}.v11favfilter{width:100%}}
