@@ -1,8 +1,36 @@
 const $=id=>document.getElementById(id),$$=s=>[...document.querySelectorAll(s)],uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2),fmt=n=>Number(n).toLocaleString("de-DE",{maximumFractionDigits:2}),esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const {cleanIngredientName,normalizeUnit:normUnit,normalizeAmount:norm,canonicalIngredient:canon,aggregateIngredients,calculatePurchase}=CCShopping;
 let S={r:[],d:[],e:[],x:[],shop:[]},editR=null,editD=null,editE=null;
 async function db(){return new Promise((a,b)=>{let q=indexedDB.open("CC",1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("s"))q.result.createObjectStore("s")};q.onsuccess=()=>a(q.result);q.onerror=()=>b(q.error)})}
-async function load(){try{let d=await db(),q=d.transaction("s").objectStore("s").get("m");S=await new Promise(a=>q.onsuccess=()=>a(q.result||S))}catch{}S.r=S.r||[];S.d=S.d||[];S.e=S.e||[];S.x=S.x||[];S.shop=S.shop||[];
-S.r.forEach(r=>{r.buf=Number(r.buf||0);r.waste=Number(r.waste||0);r.active=Number(r.active??r.pm??0);r.passive=Number(r.passive||0);r.roundBatch=!!r.roundBatch;(r.a||[]).forEach(i=>{i.u=normUnit(i.u);i.pack=Number(i.pack||0);i.packUnit=normUnit(i.packUnit||i.u)})})}
+function normalizeShopKey(key){
+  const parts=String(key||"").split("|");
+  if(parts.length<4)return"";
+  const amount=Number(String(parts[3]).replace(",","."));
+  if(!Number.isFinite(amount))return"";
+  const normalized=norm(amount,parts[2]);
+  return`${parts[0]}|${canon(parts[1])}|${normalized.u}|${normalized.a.toFixed(3)}`;
+}
+function normalizeState(next=S){
+  const source=next&&typeof next==="object"?next:{};
+  S={...source,
+    r:Array.isArray(source.r)?source.r:[],d:Array.isArray(source.d)?source.d:[],
+    e:Array.isArray(source.e)?source.e:[],x:Array.isArray(source.x)?source.x:[],
+    shop:Array.isArray(source.shop)?source.shop:[]
+  };
+  S.r.forEach(r=>{
+    r.buf=Number(r.buf||0);r.waste=Number(r.waste||0);r.active=Number(r.active??r.pm??0);
+    r.passive=Number(r.passive||0);r.roundBatch=!!r.roundBatch;r.u=normUnit(r.u);
+    r.a=Array.isArray(r.a)?r.a:[];
+    r.a.forEach(i=>{
+      i.n=cleanIngredientName(i.n);i.a=Number(i.a)||0;i.u=normUnit(i.u);
+      i.pack=Number(i.pack||0);i.packUnit=normUnit(i.packUnit||i.u);
+    });
+  });
+  S.d.forEach(d=>{d.c=Array.isArray(d.c)?d.c:[];d.c.forEach(c=>c.u=normUnit(c.u))});
+  S.shop=[...new Set(S.shop.map(normalizeShopKey).filter(Boolean))];
+  return S;
+}
+async function load(){try{let d=await db(),q=d.transaction("s").objectStore("s").get("m");S=await new Promise(a=>q.onsuccess=()=>a(q.result||S))}catch{}normalizeState(S)}
 
 function seedPlaceholderRecipes(){
   if(S.r.length)return;
@@ -41,11 +69,6 @@ function seedPlaceholderRecipes(){
 async function save(){let d=await db();return new Promise(a=>{let t=d.transaction("s","readwrite");t.objectStore("s").put(S,"m");t.oncomplete=a})}
 const localISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,todayISO=()=>localISO(new Date());
 function addDays(s,n){let d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return localISO(d)}function dayLabel(s){let t=todayISO();if(s===t)return"Heute";if(s===addDays(t,1))return"Morgen";return new Date(s+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"})}
-function normUnit(u){
-  u=String(u||"").trim().toLowerCase();
-  const map={liter:"l",lt:"l",l:"l",milliliter:"ml",ml:"ml",kilogramm:"kg",kilo:"kg",kg:"kg",gramm:"g",gr:"g",g:"g",stück:"stk",st:"stk",stk:"stk",pax:"pax",cl:"cl",dl:"dl"};
-  return map[u]||u;
-}
 function parseIng(t){
   return t.split(/\r?\n/).map(l=>{
     let p=l.split("|").map(x=>x.trim());
@@ -101,8 +124,6 @@ function groupedTasks(events,opts={}){
   });
 }
 function station(r){return(r.st||"").trim()||"Ohne Posten"}function inRange(date,range){let t=todayISO();return date>=t&&(range==="all"||date<=addDays(t,+range))}function future(range="all"){return S.e.filter(e=>inRange(e.date,range))}
-function norm(a,u){u=(u||"").toLowerCase();if(u==="g")return{a:a/1000,u:"kg"};if(u==="ml")return{a:a/1000,u:"l"};if(u==="cl")return{a:a/100,u:"l"};if(u==="dl")return{a:a/10,u:"l"};if(u==="stück"||u==="st")return{a,u:"stk"};return{a,u}}
-function canon(n){n=String(n||"").trim().toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");let m={kartoffel:"kartoffeln",kartoffeln:"kartoffeln",zwiebel:"zwiebeln",zwiebeln:"zwiebeln",karotte:"karotten",karotten:"karotten",moehre:"karotten",moehren:"karotten",tomate:"tomaten",tomaten:"tomaten",ei:"eier",eier:"eier"};return m[n]||n}
 function cat(n,c){if(c)return c;n=n.toLowerCase();if(/butter|milch|sahne|rahm|joghurt|quark|käse|parmesan/.test(n))return"Molkerei";if(/rind|kalb|schwein|huhn|ente|lamm|fleisch|fisch|lachs|zander/.test(n))return"Fleisch & Fisch";if(/kartoff|zwiebel|karott|tomat|paprika|pilz|salat|gurke|apfel|zitr|kräuter/.test(n))return"Gemüse & Obst";if(/mehl|zucker|reis|nudel|öl|essig|salz|pfeffer|fond|senf/.test(n))return"Trockenlager";return"Sonstiges"}
 
 function nav(p){$$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));$$(".page").forEach(x=>x.classList.toggle("on",x.id===p));window.scrollTo({top:0,behavior:"smooth"})}$$("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.p));
@@ -163,35 +184,40 @@ function renderShopping(){
     if(!group[key])group[key]={r:t.r,rawFactor:0};
     if(t.f!=null)group[key].rawFactor+=t.f;
   }));
-  let m={};
+  let contributions=[];
   Object.values(group).forEach(g=>{
     let plan=combinedBatchPlan(g.rawFactor,g.r);if(!plan)return;
     g.r.a.forEach(i=>{
-      let z=norm(i.a*plan.finalFactor,i.u),k=canon(i.n)+"|"+z.u;
-      if(!m[k])m[k]={name:i.n,a:0,u:z.u,cat:cat(i.n,i.c),canon:canon(i.n),pack:i.pack||0,packUnit:i.packUnit||i.u};
-      m[k].a+=z.a;
-      if(!m[k].pack&&i.pack){m[k].pack=i.pack;m[k].packUnit=i.packUnit||i.u}
+      contributions.push({
+        name:i.n,amount:i.a*plan.finalFactor,unit:i.u,category:i.c,
+        pack:i.pack||0,packUnit:i.packUnit||i.u
+      });
     });
   });
-  let a=Object.values(m);
+  let a=aggregateIngredients(contributions).map(i=>({...i,cat:cat(i.name,i.category)}));
   if($("shopSort").value==="alpha")a.sort((x,y)=>x.name.localeCompare(y.name));else a.sort((x,y)=>x.cat.localeCompare(y.cat)||x.name.localeCompare(y.name));
-  if(!a.length){$("shoppingOut").innerHTML="Kein Einkaufsbedarf.";S.shop=[];save();return}
+  if(!a.length){$("shoppingOut").innerHTML="Kein Einkaufsbedarf.";S.shop=S.shop.filter(k=>!k.startsWith(`${range}|`));save();return}
   const activeKeys=[];
+  const groupedByCategory=$("shopSort").value!=="alpha";
   let line=i=>{
-    let amount=roundDisplayAmount(i.a,i.u),packText="";
-    if(i.pack>0){
-      let pn=norm(i.pack,i.packUnit),an=norm(amount,i.u);if(pn.a<=0)pn={a:0,u:pn.u};
-      if(pn.a>0&&pn.u===an.u){
-        let packs=Math.ceil(an.a/pn.a),ordered=packs*pn.a,over=Math.max(0,ordered-an.a);
-        packText=` · ${packs} Gebinde à ${fmt(i.pack)} ${esc(i.packUnit)} → ${fmt(ordered)} ${esc(pn.u)} bestellen${over?` · Überhang ${fmt(over)} ${esc(pn.u)}`:""}`;
-      }
+    let amount=roundDisplayAmount(i.a,i.u),purchase=calculatePurchase(amount,i.u,i.packOptions);
+    let primaryAmount=amount,primaryUnit=i.u,action="Bedarf",details=[],warning=false;
+    if(!groupedByCategory)details.push(i.cat);
+    if(purchase.kind==="packed"){
+      primaryAmount=purchase.ordered;primaryUnit=purchase.need.u;action="bestellen";
+      if(purchase.over)details.push(`Bedarf ${fmt(amount)} ${i.u}`);
+      details.push(`${purchase.packs} × ${fmt(purchase.pack.amount)} ${purchase.pack.unit}`);
+      if(purchase.over)details.push(`Überhang ${fmt(purchase.over)} ${purchase.need.u}`);
+    }else if(purchase.kind==="conflict"){
+      warning=true;
+      details.push(`Gebinde prüfen: ${purchase.options.map(option=>`${fmt(option.amount)} ${option.unit}`).join(" / ")}`);
     }
-    let k=`${range}|${i.canon}|${i.u}|${Number(amount).toFixed(3)}`;activeKeys.push(k);
-    return`<label class=shopline><input class=scheck data-k="${esc(k)}" type=checkbox ${S.shop.includes(k)?"checked":""}><span><b>${esc(i.name)}</b><div class=help>${esc(i.cat)}${packText}</div></span><b>${fmt(amount)} ${esc(i.u)}</b></label>`;
+    let k=`${range}|${i.canonical}|${primaryUnit}|${Number(primaryAmount).toFixed(3)}`;activeKeys.push(k);
+    return`<label class="shopline${warning?" shopline-warning":""}"><input class=scheck data-k="${esc(k)}" type=checkbox ${S.shop.includes(k)?"checked":""}><span class=shopbody><b>${esc(i.name)}</b>${details.length?`<span class="help shopmeta">${details.map(esc).join(" · ")}</span>`:""}</span><span class=shopqty><b>${fmt(primaryAmount)} ${esc(primaryUnit)}</b><small>${action}</small></span></label>`;
   };
   if($("shopSort").value==="alpha")$("shoppingOut").innerHTML=a.map(line).join("");
   else{let by={};a.forEach(i=>(by[i.cat]??=[]).push(i));$("shoppingOut").innerHTML=Object.entries(by).map(([c,v])=>`<div class=category><h3>${esc(c)}</h3>${v.map(line).join("")}</div>`).join("")}
-  S.shop=S.shop.filter(k=>activeKeys.includes(k));save();
+  S.shop=S.shop.filter(k=>!k.startsWith(`${range}|`)||activeKeys.includes(k));save();
   $$(".scheck").forEach(c=>c.onchange=async()=>{let k=c.dataset.k;if(c.checked&&!S.shop.includes(k))S.shop.push(k);if(!c.checked)S.shop=S.shop.filter(x=>x!==k);await save()})
 }
 
@@ -357,7 +383,7 @@ $("createFunctionEvent").onclick=async()=>{
   nav("events");
 };
 $("exportBtn").onclick=()=>{let b=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="CateringCompanion_Backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-$("importFile").onchange=e=>{let f=e.target.files?.[0];if(!f)return;let r=new FileReader;r.onload=async()=>{try{let d=JSON.parse(String(r.result||"{}"));S={r:d.r||[],d:d.d||[],e:d.e||[],x:d.x||[],shop:d.shop||[]};await save();renderAll()}catch{alert("Backup ungültig")}};r.readAsText(f)}
+$("importFile").onchange=e=>{let f=e.target.files?.[0];if(!f)return;let r=new FileReader;r.onload=async()=>{try{let d=JSON.parse(String(r.result||"{}"));normalizeState(d);await save();renderAll()}catch{alert("Backup ungültig")}};r.readAsText(f)}
 $("prodRange").onchange=renderProduction;$("prodStation").onchange=renderProduction;$("shopRange").onchange=renderShopping;$("shopSort").onchange=renderShopping;$("stationFilter").onchange=renderStations;$("stationRange").onchange=renderStations;
 function renderAll(){renderToday();renderEvents();renderProduction();renderShopping();renderRecipes();renderDishes();renderStations()}(async()=>{await load();if(!S.r.length){seedPlaceholderRecipes();await save()}renderAll()})();
 $("recipeSearch").oninput=renderRecipes;$("dishSearch").oninput=renderDishes;$("eventView").onchange=renderEvents;

@@ -21,8 +21,8 @@ function inferCategory(r){
 }
 function ensureV11UI(){
   const ver=document.querySelector(".ver");
-  if(ver) ver.textContent="V11.0";
-  document.title="CateringCompanion V11.0";
+  if(ver) ver.textContent="V11.1";
+  document.title="CateringCompanion V11.1";
 
   if(!$("rcat")){
     const stationLabel=$("rst")?.parentElement;
